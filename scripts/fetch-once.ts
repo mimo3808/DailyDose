@@ -7,7 +7,7 @@ config({ path: resolve(process.cwd(), '.env.local') });
 runFetchCycle()
   .then(r => {
     console.log('done:', r);
-    process.exit(0);
+    process.exit(r.failed > 0 ? 1 : 0);
   })
   .catch(e => {
     console.error(e);

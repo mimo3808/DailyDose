@@ -14,7 +14,7 @@ export async function runFetchCycle(): Promise<{ ok: number; failed: number }> {
     try {
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), 15_000);
-      const res = await fetch(s.url, { signal: ctrl.signal, headers: { 'user-agent': 'DayilyDose/0.1' } });
+      const res = await fetch(s.url, { signal: ctrl.signal, headers: { 'user-agent': 'DayilyDose/0.1 (+https://dayilydose.app)' } });
       clearTimeout(t);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const xml = await res.text();
