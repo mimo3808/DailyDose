@@ -9,6 +9,7 @@ type Utterance = {
 type SpeakOptions = {
   rate?: number;
   voice?: SpeechSynthesisVoice | null;
+  voiceName?: string;
   onDone?: () => void;
   onError?: (e: any) => void;
 };
@@ -43,10 +44,15 @@ export function createTts() {
     speak: (text: string, opts: SpeakOptions = {}) => {
       synth.cancel();
       const chunks = chunkText(text);
+      // Resolve voice by name or use the one passed directly
+      let selectedVoice: SpeechSynthesisVoice | null = opts.voice ?? null;
+      if (!selectedVoice && opts.voiceName) {
+        selectedVoice = synth.getVoices().find(v => v.name === opts.voiceName) ?? null;
+      }
       chunks.forEach((c, idx) => {
         const u = new SpeechSynthesisUtterance(c);
         u.rate = opts.rate ?? 1;
-        if (opts.voice) u.voice = opts.voice;
+        if (selectedVoice) u.voice = selectedVoice;
         if (idx === chunks.length - 1) {
           u.onend = () => opts.onDone?.();
           u.onerror = e => opts.onError?.(e);

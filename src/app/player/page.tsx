@@ -7,13 +7,20 @@ import { ChapterList } from '@/components/ChapterList';
 import { createTts } from '@/lib/tts/synthesize';
 import type { ScriptJson } from '@/types';
 
+type VoiceInfo = { name: string; lang: string; default: boolean };
+
 function PlayerInner() {
   const params = useSearchParams();
   const date = params.get('date') ?? new Date().toISOString().slice(0, 10);
   const [script, setScript] = useState<ScriptJson | null>(null);
   const [current, setCurrent] = useState(1);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [regenerating, setRegenerating] = useState(false);
+  const [voices, setVoices] = useState<VoiceInfo[]>([]);
+  const [voiceName, setVoiceName] = useState<string>(
+    typeof window !== 'undefined' ? localStorage.getItem('dayilydose.voice') ?? '' : ''
+  );
   const tts = createTts();
   const lengthMinutes = Number(typeof window !== 'undefined' ? localStorage.getItem('dayilydose.length') ?? 8 : 8);
 
@@ -34,9 +41,31 @@ function PlayerInner() {
       .catch(e => setErr(String(e)));
   }, [date]);
 
+  // Load available voices
   useEffect(() => {
-    if (!script || !('speechSynthesis' in window)) return;
-    if (!('mediaSession' in navigator)) return;
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    const loadVoices = () => {
+      const all = speechSynthesis.getVoices();
+      if (!all.length) return;
+      setVoices(
+        all
+          .filter(v => v.lang.startsWith('zh') || v.lang.startsWith('en'))
+          .map(v => ({ name: v.name, lang: v.lang, default: v.default }))
+      );
+    };
+    loadVoices();
+    speechSynthesis.addEventListener('voiceschanged', loadVoices);
+    return () => speechSynthesis.removeEventListener('voiceschanged', loadVoices);
+  }, []);
+
+  // Persist voice choice
+  useEffect(() => {
+    if (voiceName) localStorage.setItem('dayilydose.voice', voiceName);
+  }, [voiceName]);
+
+  // Media Session
+  useEffect(() => {
+    if (!script || !('mediaSession' in navigator)) return;
     navigator.mediaSession.metadata = new MediaMetadata({
       title: script.title,
       artist: 'DayilyDose',
@@ -61,21 +90,47 @@ function PlayerInner() {
     const chapter = script.chapters.find(c => c.idx === idx);
     if (!chapter) return;
     tts.stop();
-    tts.speak(chapter.script_text, { onDone: () => {
-      if (idx < script.chapters.length) playChapter(idx + 1);
-    }});
+    setIsPlaying(true);
+    tts.speak(chapter.script_text, {
+      voiceName: voiceName || undefined,
+      onDone: () => {
+        if (idx < script.chapters.length) {
+          playChapter(idx + 1);
+        } else {
+          setIsPlaying(false);
+        }
+      },
+    });
+  };
+
+  const onPause = () => { tts.pause(); setIsPlaying(false); };
+  const onResume = () => { tts.resume(); setIsPlaying(true); };
+
+  const speakCurrentWithRate = (rate: number) => {
+    const ch = script.chapters.find(c => c.idx === current);
+    if (!ch) return;
+    tts.stop();
+    setIsPlaying(true);
+    tts.speak(ch.script_text, {
+      rate,
+      voiceName: voiceName || undefined,
+      onDone: () => {
+        if (current < script.chapters.length) playChapter(current + 1);
+        else setIsPlaying(false);
+      },
+    });
   };
 
   const onRegenerate = async () => {
     setRegenerating(true);
     tts.stop();
+    setIsPlaying(false);
     const deviceId = getOrCreateDeviceId();
     await fetch('/api/briefing/regenerate', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ device_id: deviceId, date }),
     });
-    // Re-fetch
     const res = await fetch('/api/briefing/generate', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -99,23 +154,25 @@ function PlayerInner() {
       <CoverArt title={script.title} />
       <h1 style={{ textAlign: 'center' }}>{script.title}</h1>
       <p style={{ textAlign: 'center', color: 'var(--muted)' }}>{date} · {script.chapters.length} 章</p>
-      <ChapterList chapters={script.chapters} current={current} onSelect={playChapter} />
+
+      <ChapterList chapters={script.chapters} current={current} onSelect={(idx) => { playChapter(idx); }} />
+
       <PlayerControls
         onPlay={() => playChapter(current)}
-        onStop={() => tts.stop()}
+        onPause={onPause}
+        onResume={onResume}
+        onStop={() => { tts.stop(); setIsPlaying(false); }}
         onPrev={() => current > 1 && playChapter(current - 1)}
         onNext={() => current < script.chapters.length && playChapter(current + 1)}
-        onSpeed={(r) => {
-          const ch = script.chapters.find(c => c.idx === current);
-          if (ch) { tts.stop(); setTimeout(() => tts.speak(ch.script_text, { rate: r, onDone: () => current < script.chapters.length && playChapter(current + 1) }), 50); }
-        }}
-        onSkip={() => {
-          // 15s skip: stop, wait 50ms, restart current chapter (browsers can't seek mid-utterance reliably)
-          const ch = script.chapters.find(c => c.idx === current);
-          if (ch) { tts.stop(); setTimeout(() => tts.speak(ch.script_text, { onDone: () => current < script.chapters.length && playChapter(current + 1) }), 50); }
-        }}
+        onSpeed={speakCurrentWithRate}
+        onSkip={() => speakCurrentWithRate(1)}
+        isPlaying={isPlaying}
+        voices={voices}
+        currentVoice={voiceName}
+        onVoiceChange={(name) => setVoiceName(name)}
       />
-      <div style={{ textAlign: 'center', marginTop: 16 }}>
+
+      <div style={{ textAlign: 'center', marginTop: 24 }}>
         <button onClick={onRegenerate} disabled={regenerating} style={{ padding: '8px 16px', border: '1px solid #ccc', borderRadius: 8, background: '#fff', cursor: regenerating ? 'wait' : 'pointer' }}>
           {regenerating ? '重新生成中…' : '🔄 重新生成'}
         </button>
