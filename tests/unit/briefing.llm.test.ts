@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const fetchMock = vi.fn();
 vi.stubGlobal('fetch', fetchMock);
+vi.stubEnv('ANTHROPIC_API_KEY', 'test');
 
 import { generateBriefingScript } from '@/lib/briefing/llm';
 

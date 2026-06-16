@@ -2245,14 +2245,7 @@ git commit -m "F1: LLM prompt builder with chapter estimation, TDD"
 - Create: `src/lib/briefing/llm.ts`
 - Test: `tests/unit/briefing.llm.test.ts`
 
-- [ ] **Step 1: Install SDK**
-
-```bash
-cd "C:/Users/Longl/projects/DayilyDose"
-npm install @anthropic-ai/sdk
-```
-
-- [ ] **Step 2: Write the test**
+- [ ] **Step 1: Write the test**
 
 Create `tests/unit/briefing.llm.test.ts`:
 ```typescript
@@ -2260,6 +2253,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const fetchMock = vi.fn();
 vi.stubGlobal('fetch', fetchMock);
+vi.stubEnv('ANTHROPIC_API_KEY', 'test');
 
 import { generateBriefingScript } from '@/lib/briefing/llm';
 
@@ -2310,7 +2304,7 @@ describe('generateBriefingScript', () => {
 });
 ```
 
-- [ ] **Step 3: Run test to verify it fails**
+- [ ] **Step 2: Run test to verify it fails**
 
 ```bash
 cd "C:/Users/Longl/projects/DayilyDose"
@@ -2319,7 +2313,7 @@ npx vitest run tests/unit/briefing.llm.test.ts
 
 Expected: FAIL.
 
-- [ ] **Step 4: Implement LLM client**
+- [ ] **Step 3: Implement LLM client**
 
 Create `src/lib/briefing/llm.ts`:
 ```typescript
@@ -2386,7 +2380,7 @@ export async function generateBriefingScript(prompt: string): Promise<ScriptJson
 }
 ```
 
-- [ ] **Step 5: Run test to verify it passes**
+- [ ] **Step 4: Run test to verify it passes**
 
 ```bash
 cd "C:/Users/Longl/projects/DayilyDose"
@@ -2395,7 +2389,7 @@ npx vitest run tests/unit/briefing.llm.test.ts
 
 Expected: `4 passed`.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 cd "C:/Users/Longl/projects/DayilyDose"
