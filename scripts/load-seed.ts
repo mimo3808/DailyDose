@@ -25,19 +25,25 @@ async function main() {
   const slugToId = new Map(topicRows.map(r => [r.slug, r.id]));
 
   let count = 0;
+  let warned = 0;
   for (const s of sources) {
-    const topicId = s.topic_slug ? slugToId.get(s.topic_slug) ?? null : null;
-    try {
-      await sql.query(
-        `INSERT INTO sources (url, title, topic_id, language, status)
-         VALUES ($1, $2, $3, $4, 'active')
-         ON CONFLICT (url) DO UPDATE SET title = EXCLUDED.title, topic_id = EXCLUDED.topic_id`,
-        [s.url, s.title ?? null, topicId, s.language ?? 'zh']
-      );
-      count++;
-    } catch (e: any) {
-      console.warn(`skip ${s.url}: ${e.message}`);
+    let topicId: number | null = null;
+    if (s.topic_slug) {
+      const id = slugToId.get(s.topic_slug);
+      if (id == null) {
+        console.warn(`unknown topic_slug "${s.topic_slug}" for source ${s.url}; inserting with topic_id=null`);
+        warned++;
+      } else {
+        topicId = id;
+      }
     }
+    await sql.query(
+      `INSERT INTO sources (url, title, topic_id, language, status)
+       VALUES ($1, $2, $3, $4, 'active')
+       ON CONFLICT (url) DO UPDATE SET title = EXCLUDED.title, topic_id = EXCLUDED.topic_id`,
+      [s.url, s.title ?? null, topicId, s.language ?? 'zh']
+    );
+    count++;
   }
   console.log(`loaded ${count} sources`);
 }
