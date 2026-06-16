@@ -75,7 +75,15 @@ function PlayerInner() {
         onStop={() => tts.stop()}
         onPrev={() => current > 1 && playChapter(current - 1)}
         onNext={() => current < script.chapters.length && playChapter(current + 1)}
-        onSpeed={(r) => { tts.stop(); tts.speak(script.chapters.find(c => c.idx === current)?.script_text ?? '', { rate: r }); }}
+        onSpeed={(r) => {
+          const ch = script.chapters.find(c => c.idx === current);
+          if (ch) { tts.stop(); setTimeout(() => tts.speak(ch.script_text, { rate: r, onDone: () => current < script.chapters.length && playChapter(current + 1) }), 50); }
+        }}
+        onSkip={() => {
+          // 15s skip: stop, wait 50ms, restart current chapter (browsers can't seek mid-utterance reliably)
+          const ch = script.chapters.find(c => c.idx === current);
+          if (ch) { tts.stop(); setTimeout(() => tts.speak(ch.script_text, { onDone: () => current < script.chapters.length && playChapter(current + 1) }), 50); }
+        }}
       />
     </main>
   );

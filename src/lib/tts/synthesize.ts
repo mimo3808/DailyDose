@@ -34,6 +34,7 @@ export function createTts() {
       stop: () => {},
       pause: () => {},
       resume: () => {},
+      isSpeaking: () => false,
     };
   }
   const synth = window.speechSynthesis;
@@ -56,5 +57,6 @@ export function createTts() {
     stop: () => synth.cancel(),
     pause: () => synth.pause(),
     resume: () => synth.resume(),
+    isSpeaking: () => synth.speaking ?? false,
   };
 }
