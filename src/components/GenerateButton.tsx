@@ -4,19 +4,9 @@ export function GenerateButton({ disabled, loading, onClick }: { disabled: boole
     <button
       onClick={onClick}
       disabled={disabled || loading}
-      style={{
-        padding: '14px 28px',
-        fontSize: 18,
-        background: disabled ? '#999' : 'var(--accent)',
-        color: '#fff',
-        border: 'none',
-        borderRadius: 12,
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        width: '100%',
-        marginTop: 24,
-      }}
+      className={`btn btn--primary btn--lg btn--full mt-4`}
     >
-      {loading ? '生成中…（约 30-60 秒）' : '生成今日简报'}
+      {loading ? '生成中…（约 30-60 秒）' : '🎙 生成今日简报'}
     </button>
   );
 }

@@ -10,9 +10,9 @@ export function LengthSlider({ value, onChange }: { value: number; onChange: (v:
         step={1}
         value={value}
         onChange={e => onChange(Number(e.target.value))}
-        style={{ width: '100%' }}
+        className="slider mt-2"
       />
-      <p>{value} 分钟</p>
+      <p className="text-muted mt-2">{value} 分钟 · 约 {value * 2} 个章节</p>
     </div>
   );
 }

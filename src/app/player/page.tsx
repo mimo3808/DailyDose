@@ -41,7 +41,6 @@ function PlayerInner() {
       .catch(e => setErr(String(e)));
   }, [date]);
 
-  // Load available voices
   useEffect(() => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     const loadVoices = () => {
@@ -58,12 +57,10 @@ function PlayerInner() {
     return () => speechSynthesis.removeEventListener('voiceschanged', loadVoices);
   }, []);
 
-  // Persist voice choice
   useEffect(() => {
     if (voiceName) localStorage.setItem('dayilydose.voice', voiceName);
   }, [voiceName]);
 
-  // Media Session
   useEffect(() => {
     if (!script || !('mediaSession' in navigator)) return;
     navigator.mediaSession.metadata = new MediaMetadata({
@@ -72,14 +69,14 @@ function PlayerInner() {
     });
   }, [script]);
 
-  if (err) return <main style={{ padding: 24 }}><p style={{ color: 'red' }}>{err}</p></main>;
-  if (!script) return <main style={{ padding: 24 }}><p>加载中…</p></main>;
+  if (err) return <main className="page"><p className="text-error">{err}</p></main>;
+  if (!script) return <main className="page"><p className="text-muted">加载中…</p></main>;
 
   if (typeof window !== 'undefined' && !('speechSynthesis' in window)) {
     return (
-      <main style={{ padding: 24 }}>
+      <main className="page">
         <h1>{script.title}</h1>
-        <p style={{ color: 'red' }}>当前浏览器不支持 Web Speech API，无法朗读。请改用 Chrome 或 Edge。</p>
+        <p className="text-error">当前浏览器不支持 Web Speech API，无法朗读。请改用 Chrome 或 Edge。</p>
         <ChapterList chapters={script.chapters} current={current} onSelect={() => {}} />
       </main>
     );
@@ -94,11 +91,8 @@ function PlayerInner() {
     tts.speak(chapter.script_text, {
       voiceName: voiceName || undefined,
       onDone: () => {
-        if (idx < script.chapters.length) {
-          playChapter(idx + 1);
-        } else {
-          setIsPlaying(false);
-        }
+        if (idx < script.chapters.length) playChapter(idx + 1);
+        else setIsPlaying(false);
       },
     });
   };
@@ -150,12 +144,16 @@ function PlayerInner() {
   };
 
   return (
-    <main style={{ maxWidth: 640, margin: '0 auto', padding: 24 }}>
+    <main className="page">
       <CoverArt title={script.title} />
-      <h1 style={{ textAlign: 'center' }}>{script.title}</h1>
-      <p style={{ textAlign: 'center', color: 'var(--muted)' }}>{date} · {script.chapters.length} 章</p>
+      <h1 className="text-center">{script.title}</h1>
+      <p className="text-center text-muted mt-2">
+        {date} · {script.chapters.length} 章 · {lengthMinutes} 分钟
+      </p>
 
-      <ChapterList chapters={script.chapters} current={current} onSelect={(idx) => { playChapter(idx); }} />
+      <div className="mt-6">
+        <ChapterList chapters={script.chapters} current={current} onSelect={(idx) => { playChapter(idx); }} />
+      </div>
 
       <PlayerControls
         onPlay={() => playChapter(current)}
@@ -172,8 +170,8 @@ function PlayerInner() {
         onVoiceChange={(name) => setVoiceName(name)}
       />
 
-      <div style={{ textAlign: 'center', marginTop: 24 }}>
-        <button onClick={onRegenerate} disabled={regenerating} style={{ padding: '8px 16px', border: '1px solid #ccc', borderRadius: 8, background: '#fff', cursor: regenerating ? 'wait' : 'pointer' }}>
+      <div className="text-center mt-6">
+        <button onClick={onRegenerate} disabled={regenerating} className="btn btn--ghost">
           {regenerating ? '重新生成中…' : '🔄 重新生成'}
         </button>
       </div>
@@ -185,7 +183,7 @@ import { PlayerControls } from '@/components/PlayerControls';
 
 export default function PlayerPage() {
   return (
-    <Suspense fallback={<main style={{ padding: 24 }}><p>加载中…</p></main>}>
+    <Suspense fallback={<main className="page"><p className="text-muted">加载中…</p></main>}>
       <PlayerInner />
     </Suspense>
   );

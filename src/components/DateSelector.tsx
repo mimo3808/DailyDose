@@ -13,18 +13,18 @@ export function DateSelector({ value, onChange }: { value: string; onChange: (v:
   return (
     <div>
       <h3>日期</h3>
-      <div style={{ display: 'flex', gap: 8 }}>
+      <div className="date-options mt-2">
         <button
           onClick={() => onChange(today)}
-          style={{ background: value === today ? 'var(--accent)' : '#fff', color: value === today ? '#fff' : 'var(--fg)', padding: '8px 12px', borderRadius: 8, border: '1px solid #ccc' }}
+          className={`chip${value === today ? ' chip--active' : ''}`}
         >
-          今天 ({today})
+          今天（{today}）
         </button>
         <button
           onClick={() => onChange(yesterday)}
-          style={{ background: value === yesterday ? 'var(--accent)' : '#fff', color: value === yesterday ? '#fff' : 'var(--fg)', padding: '8px 12px', borderRadius: 8, border: '1px solid #ccc' }}
+          className={`chip${value === yesterday ? ' chip--active' : ''}`}
         >
-          昨天 ({yesterday})
+          昨天（{yesterday}）
         </button>
       </div>
     </div>

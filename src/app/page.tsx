@@ -21,16 +21,13 @@ export default function Home() {
     setLoading(true); setErr(null);
     const deviceId = getOrCreateDeviceId();
     try {
-      // Persist prefs first
       await fetch('/api/prefs', {
         method: 'PUT',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ device_id: deviceId, topic_ids: topics, length_minutes: length }),
       });
-      // Save topics and length locally so the player page can re-fetch with the same selection
       localStorage.setItem('dayilydose.topics', JSON.stringify(topics));
       localStorage.setItem('dayilydose.length', String(length));
-      // Trigger generation
       const res = await fetch('/api/briefing/generate', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -51,14 +48,27 @@ export default function Home() {
   };
 
   return (
-    <main style={{ maxWidth: 640, margin: '0 auto', padding: 24 }}>
-      <h1>DayilyDose</h1>
-      <p>把你关心的行业转成每日音频简报。</p>
-      <DateSelector value={date} onChange={setDate} />
-      <TopicPicker value={topics} onChange={setTopics} />
-      <LengthSlider value={length} onChange={setLength} />
+    <main className="page">
+      <header className="home-header">
+        <h1>DayilyDose</h1>
+        <p>把你关心的行业转成每日音频简报</p>
+      </header>
+
+      <div className="section">
+        <DateSelector value={date} onChange={setDate} />
+      </div>
+
+      <div className="section">
+        <TopicPicker value={topics} onChange={setTopics} />
+      </div>
+
+      <div className="section">
+        <LengthSlider value={length} onChange={setLength} />
+      </div>
+
       <GenerateButton disabled={topics.length === 0} loading={loading} onClick={onGenerate} />
-      {err && <p style={{ color: 'red' }}>{err}</p>}
+
+      {err && <p className="text-error mt-4 text-center">{err}</p>}
     </main>
   );
 }
