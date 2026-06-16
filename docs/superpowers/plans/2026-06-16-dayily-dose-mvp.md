@@ -2227,7 +2227,7 @@ cd "C:/Users/Longl/projects/DayilyDose"
 npx vitest run tests/unit/briefing.prompt.test.ts
 ```
 
-Expected: `4 passed`.
+Expected: `3 passed` (1 in `estimateChapterCount`, 2 in `buildPrompt`).
 
 - [ ] **Step 5: Commit**
 
