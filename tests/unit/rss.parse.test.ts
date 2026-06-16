@@ -57,6 +57,7 @@ describe('parseRssXml', () => {
 
   it('returns empty on invalid XML', () => {
     const r = parseRssXml('not xml');
+    expect(r.channelTitle).toBe('');
     expect(r.items).toEqual([]);
   });
 });

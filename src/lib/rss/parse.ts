@@ -51,17 +51,18 @@ function pickDate(item: any): Date | null {
 }
 
 export function parseRssXml(xml: string): ParsedFeed {
+  let parsed: any;
   try {
-    const parsed = parser.parse(xml);
-    const channelTitle = pickChannelTitle(parsed);
-    const items = pickItems(parsed).map((it: any) => ({
-      title: String(it.title ?? '').trim(),
-      url: pickUrl(it),
-      description: String(it.description ?? it.summary ?? it['content:encoded'] ?? '').trim(),
-      publishedAt: pickDate(it),
-    })).filter(i => i.title && i.url);
-    return { channelTitle, items };
+    parsed = parser.parse(xml);
   } catch {
     return { channelTitle: '', items: [] };
   }
+  const channelTitle = pickChannelTitle(parsed);
+  const items = pickItems(parsed).map((it: any) => ({
+    title: String(it.title ?? '').trim(),
+    url: pickUrl(it),
+    description: String(it.description ?? it.summary ?? it['content:encoded'] ?? '').trim(),
+    publishedAt: pickDate(it),
+  })).filter(i => i.title && i.url);
+  return { channelTitle, items };
 }
