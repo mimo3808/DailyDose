@@ -46,11 +46,24 @@ function PlayerInner() {
     const loadVoices = () => {
       const all = speechSynthesis.getVoices();
       if (!all.length) return;
-      setVoices(
-        all
-          .filter(v => v.lang.startsWith('zh') || v.lang.startsWith('en'))
-          .map(v => ({ name: v.name, lang: v.lang, default: v.default }))
-      );
+      const filtered = all
+        .filter(v => v.lang.startsWith('zh') || v.lang.startsWith('en'))
+        .map(v => ({ name: v.name, lang: v.lang, default: v.default }));
+      setVoices(filtered);
+
+      // Auto-select best Chinese voice if user hasn't chosen one
+      if (!localStorage.getItem('dayilydose.voice')) {
+        const zhVoices = filtered.filter(v => v.lang.startsWith('zh'));
+        // Prefer natural/online voices, then Microsoft ones
+        const best = zhVoices.find(v => v.name.includes('Natural')) ??
+                     zhVoices.find(v => v.name.includes('Online')) ??
+                     zhVoices.find(v => v.name.includes('Microsoft')) ??
+                     zhVoices[0];
+        if (best) {
+          setVoiceName(best.name);
+          localStorage.setItem('dayilydose.voice', best.name);
+        }
+      }
     };
     loadVoices();
     speechSynthesis.addEventListener('voiceschanged', loadVoices);
@@ -70,7 +83,17 @@ function PlayerInner() {
   }, [script]);
 
   if (err) return <main className="page"><p className="text-error">{err}</p></main>;
-  if (!script) return <main className="page"><p className="text-muted">加载中…</p></main>;
+  if (!script) return (
+    <main className="page">
+      <div className="skeleton skeleton--cover" />
+      <div className="skeleton skeleton--title" />
+      <div className="skeleton skeleton--text" style={{ width: '40%', margin: '0 auto 24px' }} />
+      <div className="skeleton skeleton--body" />
+      <div className="skeleton skeleton--text" style={{ width: '80%' }} />
+      <div className="skeleton skeleton--text" />
+      <div className="skeleton skeleton--text" style={{ width: '60%' }} />
+    </main>
+  );
 
   if (typeof window !== 'undefined' && !('speechSynthesis' in window)) {
     return (
@@ -144,7 +167,7 @@ function PlayerInner() {
   };
 
   return (
-    <main className="page">
+    <main className="page fade-in">
       <CoverArt title={script.title} />
       <h1 className="text-center">{script.title}</h1>
       <p className="text-center text-muted mt-2">

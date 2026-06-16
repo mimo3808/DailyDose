@@ -15,7 +15,19 @@ export function TopicPicker({ value, onChange }: { value: number[]; onChange: (v
   }, []);
 
   if (err) return <p className="text-error">加载 topic 失败：{err}</p>;
-  if (!topics.length) return <p className="text-muted">加载中…</p>;
+  if (!topics.length) return (
+    <div>
+      <div className="skeleton skeleton--text" style={{ width: 160 }} />
+      <div className="chip-group mt-2">
+        <div className="skeleton skeleton--chip" />
+        <div className="skeleton skeleton--chip" style={{ width: 100 }} />
+        <div className="skeleton skeleton--chip" style={{ width: 140 }} />
+        <div className="skeleton skeleton--chip" style={{ width: 110 }} />
+        <div className="skeleton skeleton--chip" style={{ width: 90 }} />
+        <div className="skeleton skeleton--chip" style={{ width: 130 }} />
+      </div>
+    </div>
+  );
 
   const toggle = (id: number) => {
     onChange(value.includes(id) ? value.filter(x => x !== id) : [...value, id]);
