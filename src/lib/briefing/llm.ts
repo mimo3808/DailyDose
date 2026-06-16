@@ -1,8 +1,10 @@
 import type { ScriptJson } from '@/types';
 
-const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-sonnet-4-5';
+const ANTHROPIC_BASE = process.env.ANTHROPIC_BASE_URL ?? 'https://api.anthropic.com';
+const ANTHROPIC_URL = `${ANTHROPIC_BASE}/v1/messages`;
+const MODEL = process.env.ANTHROPIC_MODEL ?? process.env.ANTHROPIC_DEFAULT_SONNET_MODEL ?? 'claude-sonnet-4-5';
 const MAX_RETRIES = 2;
+const FETCH_TIMEOUT_MS = 120_000;
 
 function stripCodeFence(s: string): string {
   const m = s.match(/```(?:json)?\s*([\s\S]+?)\s*```/i);
@@ -26,8 +28,11 @@ export async function generateBriefingScript(prompt: string): Promise<ScriptJson
 
   let lastErr: unknown;
   for (let i = 0; i <= MAX_RETRIES; i++) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
     const res = await fetch(ANTHROPIC_URL, {
       method: 'POST',
+      signal: ctrl.signal,
       headers: {
         'content-type': 'application/json',
         'x-api-key': apiKey,
@@ -39,6 +44,7 @@ export async function generateBriefingScript(prompt: string): Promise<ScriptJson
         messages: [{ role: 'user', content: prompt }],
       }),
     });
+    clearTimeout(t);
     if (res.status >= 500) {
       lastErr = new Error(`anthropic ${res.status}`);
       await new Promise(r => setTimeout(r, 500 * (i + 1)));

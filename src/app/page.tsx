@@ -27,8 +27,9 @@ export default function Home() {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ device_id: deviceId, topic_ids: topics, length_minutes: length }),
       });
-      // Save topics locally so the player page can re-fetch with the same selection
+      // Save topics and length locally so the player page can re-fetch with the same selection
       localStorage.setItem('dayilydose.topics', JSON.stringify(topics));
+      localStorage.setItem('dayilydose.length', String(length));
       // Trigger generation
       const res = await fetch('/api/briefing/generate', {
         method: 'POST',

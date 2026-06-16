@@ -15,6 +15,7 @@ function PlayerInner() {
   const [err, setErr] = useState<string | null>(null);
   const [regenerating, setRegenerating] = useState(false);
   const tts = createTts();
+  const lengthMinutes = Number(typeof window !== 'undefined' ? localStorage.getItem('dayilydose.length') ?? 8 : 8);
 
   useEffect(() => {
     const deviceId = getOrCreateDeviceId();
@@ -24,7 +25,7 @@ function PlayerInner() {
       body: JSON.stringify({
         device_id: deviceId,
         date,
-        length_minutes: 8,
+        length_minutes: lengthMinutes,
         topic_ids: JSON.parse(localStorage.getItem('dayilydose.topics') ?? '[]'),
       }),
     })
@@ -81,7 +82,7 @@ function PlayerInner() {
       body: JSON.stringify({
         device_id: deviceId,
         date,
-        length_minutes: 8,
+        length_minutes: lengthMinutes,
         topic_ids: JSON.parse(localStorage.getItem('dayilydose.topics') ?? '[]'),
       }),
     });

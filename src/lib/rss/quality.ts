@@ -1,8 +1,7 @@
-import { neon } from '@neondatabase/serverless';
+import { query } from '@/lib/db';
 
 export async function updateQualityScores(): Promise<void> {
-  const sql = neon(process.env.DATABASE_URL!);
-  await sql.query(`
+  await query(`
     UPDATE sources s SET quality_score = sub.score
     FROM (
       SELECT

@@ -1,12 +1,13 @@
-import { neon } from '@neondatabase/serverless';
+import { query } from '@/lib/db';
 import { parseRssXml } from './parse';
 import { contentHash, dedupeByHash } from './dedupe';
 
 export async function fetchAndStoreForSource(sourceId: number, rawXml: string): Promise<number> {
-  const sql = neon(process.env.DATABASE_URL!);
-  const sourceRows = await sql.query(`SELECT topic_id, url FROM sources WHERE id = $1`, [sourceId]);
+  const sourceRows = await query<{ topic_id: number | null; url: string }>(
+    `SELECT topic_id, url FROM sources WHERE id = $1`, [sourceId]
+  );
   if (!sourceRows.length) return 0;
-  const topicId = (sourceRows[0] as any).topic_id;
+  const topicId = sourceRows[0].topic_id;
 
   const { items } = parseRssXml(rawXml);
   if (!items.length) return 0;
@@ -15,7 +16,7 @@ export async function fetchAndStoreForSource(sourceId: number, rawXml: string): 
   let inserted = 0;
   for (const it of unique) {
     const hash = contentHash(it);
-    const r = await sql.query(
+    const r = await query<{ id: number }>(
       `INSERT INTO articles (source_id, topic_id, title, url, content, published_at, content_hash)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        ON CONFLICT (content_hash) DO NOTHING
@@ -25,7 +26,7 @@ export async function fetchAndStoreForSource(sourceId: number, rawXml: string): 
     if (r.length) inserted++;
   }
 
-  await sql.query(
+  await query(
     `UPDATE sources SET last_fetched_at = NOW(), consecutive_failures = 0, status = 'active' WHERE id = $1`,
     [sourceId]
   );
@@ -33,8 +34,7 @@ export async function fetchAndStoreForSource(sourceId: number, rawXml: string): 
 }
 
 export async function markSourceFailure(sourceId: number): Promise<void> {
-  const sql = neon(process.env.DATABASE_URL!);
-  const rows = await sql.query(
+  const rows = await query<{ status: string; consecutive_failures: number }>(
     `UPDATE sources
      SET consecutive_failures = consecutive_failures + 1,
          status = CASE WHEN consecutive_failures + 1 >= 5 THEN 'inactive' ELSE 'degraded' END
@@ -43,7 +43,7 @@ export async function markSourceFailure(sourceId: number): Promise<void> {
     [sourceId]
   );
   if (!rows.length) return;
-  const r = rows[0] as any;
+  const r = rows[0];
   if (r.status === 'inactive') {
     console.warn(`source ${sourceId} marked inactive after ${r.consecutive_failures} failures`);
   }

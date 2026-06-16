@@ -1,14 +1,13 @@
-import { neon } from '@neondatabase/serverless';
+import { query } from '@/lib/db';
 import { fetchAndStoreForSource, markSourceFailure } from './fetch';
 import { updateQualityScores } from './quality';
 
 type SourceRow = { id: number; url: string };
 
 export async function runFetchCycle(): Promise<{ ok: number; failed: number }> {
-  const sql = neon(process.env.DATABASE_URL!);
-  const rows = (await sql.query(
+  const rows = await query<SourceRow>(
     `SELECT id, url FROM sources WHERE status IN ('active', 'degraded', 'pending')`
-  )) as SourceRow[];
+  );
 
   let ok = 0, failed = 0;
   for (const s of rows) {

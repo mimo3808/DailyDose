@@ -78,5 +78,12 @@ export async function generateBriefing(args: Args): Promise<ScriptJson> {
 }
 
 export async function clearDailyCache(deviceId: string, date: string): Promise<void> {
-  await query(`DELETE FROM daily_cache WHERE device_id = $1 AND brief_date = $2::date`, [deviceId, date]);
+  // Delete the briefing row first (FK from daily_cache is ON DELETE SET NULL? No — just delete both)
+  const cached = await query<{ briefing_id: number }>(
+    `DELETE FROM daily_cache WHERE device_id = $1 AND brief_date = $2::date RETURNING briefing_id`,
+    [deviceId, date]
+  );
+  for (const row of cached) {
+    await query(`DELETE FROM briefings WHERE id = $1`, [row.briefing_id]);
+  }
 }
