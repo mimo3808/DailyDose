@@ -1,5 +1,6 @@
 import { neon } from '@neondatabase/serverless';
 import { fetchAndStoreForSource, markSourceFailure } from './fetch';
+import { updateQualityScores } from './quality';
 
 type SourceRow = { id: number; url: string };
 
@@ -25,5 +26,6 @@ export async function runFetchCycle(): Promise<{ ok: number; failed: number }> {
       failed++;
     }
   }
+  await updateQualityScores();
   return { ok, failed };
 }
