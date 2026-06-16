@@ -20,6 +20,7 @@
   "type": "commonjs",
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
+    "fast-xml-parser": "^5.9.0",
     "next": "^14.2.35",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
