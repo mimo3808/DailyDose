@@ -1962,6 +1962,8 @@ export default function Home() {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ device_id: deviceId, topic_ids: topics, length_minutes: length }),
       });
+      // Save topics locally so the player page can re-fetch with the same selection
+      localStorage.setItem('dayilydose.topics', JSON.stringify(topics));
       // Trigger generation
       const res = await fetch('/api/briefing/generate', {
         method: 'POST',
@@ -2820,6 +2822,16 @@ function PlayerInner() {
 
   if (err) return <main style={{ padding: 24 }}><p style={{ color: 'red' }}>{err}</p></main>;
   if (!script) return <main style={{ padding: 24 }}><p>加载中…</p></main>;
+
+  if (typeof window !== 'undefined' && !('speechSynthesis' in window)) {
+    return (
+      <main style={{ padding: 24 }}>
+        <h1>{script.title}</h1>
+        <p style={{ color: 'red' }}>当前浏览器不支持 Web Speech API，无法朗读。请改用 Chrome 或 Edge。</p>
+        <ChapterList chapters={script.chapters} current={current} onSelect={() => {}} />
+      </main>
+    );
+  }
 
   const playChapter = (idx: number) => {
     setCurrent(idx);
