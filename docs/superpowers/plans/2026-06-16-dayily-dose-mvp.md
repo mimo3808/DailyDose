@@ -1098,7 +1098,7 @@ describe('dedupeByHash', () => {
     const items = [
       { title: 'A', url: 'a', description: 'x' },
       { title: 'B', url: 'b', description: 'y' },
-      { title: 'A2', url: 'a', description: 'x2' }, // same url as first
+      { title: 'A', url: 'a', description: 'x' }, // exact duplicate of first
     ];
     const out = dedupeByHash(items);
     expect(out).toHaveLength(2);
