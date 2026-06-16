@@ -14,5 +14,5 @@ export function getSql(): NeonQueryFunction<false, false> {
 
 export async function query<T = any>(text: string, params: any[] = []): Promise<T[]> {
   const s = getSql();
-  return s(text, params) as Promise<T[]>;
+  return s.query(text, params) as Promise<T[]>;
 }
