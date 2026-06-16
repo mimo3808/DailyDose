@@ -372,6 +372,7 @@ git commit -m "A2: set up Vitest and Playwright with smoke tests"
 - Create: `src/lib/db.ts`
 - Create: `src/types/index.ts`
 - Create: `.env.example`
+- Create: `scripts/apply-schema.ts`
 
 - [ ] **Step 1: Create Neon project**
 
@@ -558,18 +559,54 @@ export async function query<T = any>(text: string, params: any[] = []): Promise<
 }
 ```
 
-- [ ] **Step 7: Apply schema**
+- [ ] **Step 7: Create apply-schema helper**
 
-```bash
-cd "C:/Users/Longl/projects/DayilyDose"
-npx tsx -e "import { config } from 'dotenv'; config({ path: '.env.local' }); import('fs').then(async fs => { const sql = (await import('@neondatabase/serverless')).neon(process.env.DATABASE_URL); const ddl = fs.readFileSync('db/schema.sql', 'utf8'); await sql(ddl); console.log('schema applied'); });"
+The Neon serverless driver runs one statement per call — the schema file has many `;`-separated `CREATE TABLE`/`CREATE INDEX` statements, so a single `sql(ddl)` call fails. Split and run individually.
+
+Create `scripts/apply-schema.ts`:
+```typescript
+import { config } from 'dotenv';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
+import { neon } from '@neondatabase/serverless';
+
+config({ path: resolve(process.cwd(), '.env.local') });
+
+const url = process.env.DATABASE_URL;
+if (!url) throw new Error('DATABASE_URL not set in .env.local');
+
+const sql = neon(url);
+
+const ddl = readFileSync(resolve(process.cwd(), 'db/schema.sql'), 'utf8');
+
+// Split on `;\n` boundaries; strip line comments; drop empty chunks.
+const statements = ddl
+  .split(/;\s*\n/)
+  .map(s => s.replace(/^--.*$/gm, '').trim())
+  .filter(s => s.length > 0);
+
+async function main() {
+  for (const stmt of statements) {
+    await sql.query(stmt);
+  }
+  console.log(`schema applied: ${statements.length} statements`);
+}
+
+main().catch(e => { console.error(e); process.exit(1); });
 ```
 
 (Install tsx first if missing: `npm install -D tsx`.)
 
-Expected: `schema applied`. If error, check connection string.
+- [ ] **Step 8: Apply schema**
 
-- [ ] **Step 8: Commit**
+```bash
+cd "C:/Users/Longl/projects/DayilyDose"
+npx tsx scripts/apply-schema.ts
+```
+
+Expected: `schema applied: 14 statements` (6 CREATE TABLE + 8 CREATE INDEX).
+
+- [ ] **Step 9: Commit**
 
 ```bash
 cd "C:/Users/Longl/projects/DayilyDose"
@@ -585,6 +622,7 @@ git commit -m "A3: create Postgres schema and Neon client"
 - Create: `db/seed/topics.json`
 - Create: `db/seed/sources.json`
 - Create: `scripts/load-seed.ts`
+- Create: `scripts/verify-seed.ts`
 
 - [ ] **Step 1: Create topics seed**
 
@@ -624,16 +662,21 @@ Add at least 50 entries covering all 12 topics before running. (User can curate 
 Create `scripts/load-seed.ts`:
 ```typescript
 import { config } from 'dotenv';
-config({ path: '.env.local' });
+import { resolve } from 'path';
 import { neon } from '@neondatabase/serverless';
 import topics from '../db/seed/topics.json';
 import sources from '../db/seed/sources.json';
 
-async function main() {
-  const sql = neon(process.env.DATABASE_URL!);
+config({ path: resolve(process.cwd(), '.env.local') });
 
+const url = process.env.DATABASE_URL;
+if (!url) throw new Error('DATABASE_URL not set in .env.local');
+
+const sql = neon(url);
+
+async function main() {
   for (const t of topics) {
-    await sql(
+    await sql.query(
       `INSERT INTO topics (slug, name_zh, name_en) VALUES ($1, $2, $3)
        ON CONFLICT (slug) DO UPDATE SET name_zh = EXCLUDED.name_zh`,
       [t.slug, t.name_zh, t.name_en ?? null]
@@ -641,14 +684,14 @@ async function main() {
   }
   console.log(`loaded ${topics.length} topics`);
 
-  const topicRows = await sql(`SELECT id, slug FROM topics`);
-  const slugToId = new Map(topicRows.map((r: any) => [r.slug, r.id]));
+  const topicRows = await sql.query<{ id: number; slug: string }>('SELECT id, slug FROM topics');
+  const slugToId = new Map(topicRows.map(r => [r.slug, r.id]));
 
   let count = 0;
   for (const s of sources) {
     const topicId = s.topic_slug ? slugToId.get(s.topic_slug) ?? null : null;
     try {
-      await sql(
+      await sql.query(
         `INSERT INTO sources (url, title, topic_id, language, status)
          VALUES ($1, $2, $3, $4, 'active')
          ON CONFLICT (url) DO UPDATE SET title = EXCLUDED.title, topic_id = EXCLUDED.topic_id`,
@@ -676,12 +719,41 @@ Expected: `loaded 12 topics` then `loaded 50 sources` (or similar count).
 
 - [ ] **Step 5: Verify in DB**
 
-```bash
-cd "C:/Users/Longl/projects/DayilyDose"
-npx tsx -e "import { config } from 'dotenv'; config({ path: '.env.local' }); import('@neondatabase/serverless').then(({neon}) => neon(process.env.DATABASE_URL)('SELECT COUNT(*)::int AS n FROM sources;')).then(r => console.log('sources:', r[0].n));"
+Create `scripts/verify-seed.ts`:
+```typescript
+import { config } from 'dotenv';
+import { resolve } from 'path';
+import { neon } from '@neondatabase/serverless';
+
+config({ path: resolve(process.cwd(), '.env.local') });
+
+const url = process.env.DATABASE_URL;
+if (!url) throw new Error('DATABASE_URL not set in .env.local');
+
+const sql = neon(url);
+
+async function main() {
+  const topics = await sql.query<{ n: number }>('SELECT COUNT(*)::int AS n FROM topics');
+  const sources = await sql.query<{ n: number }>('SELECT COUNT(*)::int AS n FROM sources');
+  const byTopic = await sql.query<{ slug: string; n: number }>(
+    'SELECT t.slug, COUNT(s.id)::int AS n FROM topics t LEFT JOIN sources s ON s.topic_id = t.id GROUP BY t.slug ORDER BY t.slug'
+  );
+  console.log(`topics: ${topics[0].n}`);
+  console.log(`sources: ${sources[0].n}`);
+  for (const r of byTopic) {
+    console.log(`  ${r.slug}: ${r.n}`);
+  }
+}
+
+main().catch(e => { console.error(e); process.exit(1); });
 ```
 
-Expected: `sources: 50` (or whatever count you loaded).
+```bash
+cd "C:/Users/Longl/projects/DayilyDose"
+npx tsx scripts/verify-seed.ts
+```
+
+Expected: `topics: 12` and `sources: 50` (or whatever count you loaded) and a per-topic breakdown showing all 12 topics covered.
 
 - [ ] **Step 6: Commit**
 

@@ -1,0 +1,14 @@
+[
+  { "slug": "ai", "name_zh": "人工智能", "name_en": "AI" },
+  { "slug": "tech", "name_zh": "科技", "name_en": "Tech" },
+  { "slug": "finance", "name_zh": "金融", "name_en": "Finance" },
+  { "slug": "macro", "name_zh": "宏观经济", "name_en": "Macro" },
+  { "slug": "consumer", "name_zh": "消费", "name_en": "Consumer" },
+  { "slug": "semiconductor", "name_zh": "半导体", "name_en": "Semiconductor" },
+  { "slug": "ev", "name_zh": "新能源汽车", "name_en": "EV" },
+  { "slug": "biotech", "name_zh": "生物医药", "name_en": "Biotech" },
+  { "slug": "energy", "name_zh": "能源", "name_en": "Energy" },
+  { "slug": "policy", "name_zh": "政策与监管", "name_en": "Policy" },
+  { "slug": "geopolitics", "name_zh": "地缘政治", "name_en": "Geopolitics" },
+  { "slug": "world", "name_zh": "国际新闻", "name_en": "World" }
+]

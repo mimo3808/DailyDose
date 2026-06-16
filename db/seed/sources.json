@@ -1,0 +1,68 @@
+[
+  { "url": "https://36kr.com/feed", "title": "36氪", "topic_slug": "tech", "language": "zh" },
+  { "url": "https://www.ithome.com/rss/", "title": "IT之家", "topic_slug": "tech", "language": "zh" },
+  { "url": "https://www.solidot.org/index.rss", "title": "Solidot", "topic_slug": "tech", "language": "zh" },
+  { "url": "https://hnrss.org/frontpage", "title": "Hacker News Front Page", "topic_slug": "tech", "language": "en" },
+  { "url": "https://techcrunch.com/feed/", "title": "TechCrunch", "topic_slug": "tech", "language": "en" },
+  { "url": "https://www.theverge.com/rss/index.xml", "title": "The Verge", "topic_slug": "tech", "language": "en" },
+
+  { "url": "https://openai.com/blog/rss.xml", "title": "OpenAI Blog", "topic_slug": "ai", "language": "en" },
+  { "url": "https://www.technologyreview.com/topic/artificial-intelligence/feed", "title": "MIT Technology Review - AI", "topic_slug": "ai", "language": "en" },
+  { "url": "https://export.arxiv.org/rss/cs.AI", "title": "arXiv cs.AI", "topic_slug": "ai", "language": "en" },
+  { "url": "https://www.deeplearning.ai/the-batch/feed/", "title": "The Batch (DeepLearning.AI)", "topic_slug": "ai", "language": "en" },
+  { "url": "https://www.jiqizhixin.com/rss", "title": "机器之心", "topic_slug": "ai", "language": "zh" },
+
+  { "url": "https://feeds.bloomberg.com/markets/news.rss", "title": "Bloomberg Markets", "topic_slug": "finance", "language": "en" },
+  { "url": "https://feeds.wsjonline.com/wsj/markets/feed", "title": "Wall Street Journal Markets", "topic_slug": "finance", "language": "en" },
+  { "url": "https://www.reutersagency.com/feed/?best-topics=business", "title": "Reuters Business", "topic_slug": "finance", "language": "en" },
+  { "url": "https://www.ft.com/finance?format=rss", "title": "Financial Times", "topic_slug": "finance", "language": "en" },
+  { "url": "https://www.caixin.com/finance/rss.xml", "title": "财新金融", "topic_slug": "finance", "language": "zh" },
+
+  { "url": "https://www.ft.com/macro?format=rss", "title": "Financial Times - Macro", "topic_slug": "macro", "language": "en" },
+  { "url": "https://feeds.bloomberg.com/economics/news.rss", "title": "Bloomberg Economics", "topic_slug": "macro", "language": "en" },
+  { "url": "https://www.caixin.com/economy/rss.xml", "title": "财新宏观", "topic_slug": "macro", "language": "zh" },
+  { "url": "https://www.imf.org/en/news/rss?contenttype=blog", "title": "IMF Blogs", "topic_slug": "macro", "language": "en" },
+  { "url": "https://www.nber.org/rss/new.xml", "title": "NBER Working Papers", "topic_slug": "macro", "language": "en" },
+
+  { "url": "https://www.latetl.com/feed", "title": "晚点 LatePost", "topic_slug": "consumer", "language": "zh" },
+  { "url": "https://www.huxiu.com/rss/feed.xml", "title": "虎嗅", "topic_slug": "consumer", "language": "zh" },
+  { "url": "https://www.cbinsights.com/research/feed/", "title": "CB Insights Research", "topic_slug": "consumer", "language": "en" },
+  { "url": "https://www.consumerreports.org/feed/news.rss", "title": "Consumer Reports", "topic_slug": "consumer", "language": "en" },
+
+  { "url": "https://www.anandtech.com/rss", "title": "AnandTech", "topic_slug": "semiconductor", "language": "en" },
+  { "url": "https://www.semi.org/en/rss/news", "title": "SEMI", "topic_slug": "semiconductor", "language": "en" },
+  { "url": "https://www.tomshardware.com/feeds/all", "title": "Tom's Hardware", "topic_slug": "semiconductor", "language": "en" },
+  { "url": "https://spectrum.ieee.org/semiconductors/rss", "title": "IEEE Spectrum - Semiconductors", "topic_slug": "semiconductor", "language": "en" },
+
+  { "url": "https://electrek.co/feed/", "title": "Electrek", "topic_slug": "ev", "language": "en" },
+  { "url": "https://insideevs.com/rss/articles", "title": "InsideEVs", "topic_slug": "ev", "language": "en" },
+  { "url": "https://www.carnewschina.com/feed", "title": "CarNewsChina", "topic_slug": "ev", "language": "en" },
+  { "url": "https://www.ev100.com/rss", "title": "电动汽车百人会", "topic_slug": "ev", "language": "zh" },
+
+  { "url": "https://endpts.com/feed/", "title": "Endpoints News", "topic_slug": "biotech", "language": "en" },
+  { "url": "https://www.fiercebiotech.com/rss/xml", "title": "FierceBiotech", "topic_slug": "biotech", "language": "en" },
+  { "url": "https://www.statnews.com/feed/", "title": "STAT News", "topic_slug": "biotech", "language": "en" },
+  { "url": "https://www.biospace.com/rss", "title": "BioSpace", "topic_slug": "biotech", "language": "en" },
+
+  { "url": "https://www.reuters.com/business/energy/rss", "title": "Reuters Energy", "topic_slug": "energy", "language": "en" },
+  { "url": "https://oilprice.com/rss/main", "title": "OilPrice.com", "topic_slug": "energy", "language": "en" },
+  { "url": "https://feeds.bloomberg.com/green/feed", "title": "Bloomberg Green", "topic_slug": "energy", "language": "en" },
+  { "url": "https://www.energymagazine.com.cn/rss", "title": "能源杂志", "topic_slug": "energy", "language": "zh" },
+
+  { "url": "https://www.politico.com/rss/politicopicks.xml", "title": "Politico", "topic_slug": "policy", "language": "en" },
+  { "url": "https://www.reuters.com/world/us/rss", "title": "Reuters US Politics", "topic_slug": "policy", "language": "en" },
+  { "url": "https://www.gov.cn/rss/zhengce.xml", "title": "中国政府网", "topic_slug": "policy", "language": "zh" },
+  { "url": "https://www.gov.cn/rss/zhengfu.xml", "title": "国务院", "topic_slug": "policy", "language": "zh" },
+
+  { "url": "https://foreignpolicy.com/feed/", "title": "Foreign Policy", "topic_slug": "geopolitics", "language": "en" },
+  { "url": "https://www.foreignaffairs.com/rss.xml", "title": "Foreign Affairs", "topic_slug": "geopolitics", "language": "en" },
+  { "url": "https://warontherocks.com/feed/", "title": "War on the Rocks", "topic_slug": "geopolitics", "language": "en" },
+  { "url": "https://www.guancha.cn/feed", "title": "观察者网", "topic_slug": "geopolitics", "language": "zh" },
+
+  { "url": "https://feeds.bbci.co.uk/news/world/rss.xml", "title": "BBC World", "topic_slug": "world", "language": "en" },
+  { "url": "https://www.reuters.com/world/rss", "title": "Reuters World", "topic_slug": "world", "language": "en" },
+  { "url": "https://www.aljazeera.com/xml/rss/all.xml", "title": "Al Jazeera", "topic_slug": "world", "language": "en" },
+  { "url": "https://rss.nytimes.com/services/xml/rss/nyt/World.xml", "title": "NYT World", "topic_slug": "world", "language": "en" },
+  { "url": "https://www.thepaper.cn/rss/featuredRowList.xml", "title": "澎湃国际", "topic_slug": "world", "language": "zh" },
+  { "url": "https://feeds.npr.org/1004/rss.xml", "title": "NPR World", "topic_slug": "world", "language": "en" }
+]
