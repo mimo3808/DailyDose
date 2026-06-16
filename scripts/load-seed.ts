@@ -25,14 +25,12 @@ async function main() {
   const slugToId = new Map(topicRows.map(r => [r.slug, r.id]));
 
   let count = 0;
-  let warned = 0;
   for (const s of sources) {
     let topicId: number | null = null;
     if (s.topic_slug) {
       const id = slugToId.get(s.topic_slug);
       if (id == null) {
         console.warn(`unknown topic_slug "${s.topic_slug}" for source ${s.url}; inserting with topic_id=null`);
-        warned++;
       } else {
         topicId = id;
       }

@@ -604,7 +604,7 @@ cd "C:/Users/Longl/projects/DayilyDose"
 npx tsx scripts/apply-schema.ts
 ```
 
-Expected: `schema applied: 14 statements` (6 CREATE TABLE + 8 CREATE INDEX).
+Expected: `schema applied: 12 statements` (6 CREATE TABLE + 6 CREATE INDEX).
 
 - [ ] **Step 9: Commit**
 
