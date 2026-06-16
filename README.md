@@ -12,7 +12,7 @@ cd DayilyDose
 npm install
 cp .env.example .env.local
 # Fill in DATABASE_URL, ANTHROPIC_API_KEY, CRON_SECRET
-npx tsx scripts/load-seed.ts    # load 12 topics + 50 sources
+npx tsx scripts/load-seed.ts    # load 12 topics + 55 sources
 npx tsx scripts/fetch-once.ts   # one-shot RSS fetch
 npm run dev                     # http://localhost:3000
 ```
