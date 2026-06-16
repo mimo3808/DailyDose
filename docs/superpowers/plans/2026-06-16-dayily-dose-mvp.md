@@ -2894,7 +2894,7 @@ function PlayerInner() {
   const params = useSearchParams();
   const date = params.get('date') ?? new Date().toISOString().slice(0, 10);
   const [script, setScript] = useState<ScriptJson | null>(null);
-  const [current, setCurrent] = useState(0);
+  const [current, setCurrent] = useState(1);
   const [err, setErr] = useState<string | null>(null);
   const tts = createTts();
 
@@ -2958,7 +2958,7 @@ function PlayerInner() {
         onStop={() => tts.stop()}
         onPrev={() => current > 1 && playChapter(current - 1)}
         onNext={() => current < script.chapters.length && playChapter(current + 1)}
-        onSpeed={(r) => tts.stop() || tts.speak(script.chapters.find(c => c.idx === current)?.script_text ?? '', { rate: r })}
+        onSpeed={(r) => { tts.stop(); tts.speak(script.chapters.find(c => c.idx === current)?.script_text ?? '', { rate: r }); }}
       />
     </main>
   );
