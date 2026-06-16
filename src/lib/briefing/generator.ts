@@ -76,3 +76,7 @@ export async function generateBriefing(args: Args): Promise<ScriptJson> {
 
   return script;
 }
+
+export async function clearDailyCache(deviceId: string, date: string): Promise<void> {
+  await query(`DELETE FROM daily_cache WHERE device_id = $1 AND brief_date = $2::date`, [deviceId, date]);
+}

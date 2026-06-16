@@ -13,6 +13,7 @@ function PlayerInner() {
   const [script, setScript] = useState<ScriptJson | null>(null);
   const [current, setCurrent] = useState(1);
   const [err, setErr] = useState<string | null>(null);
+  const [regenerating, setRegenerating] = useState(false);
   const tts = createTts();
 
   useEffect(() => {
@@ -64,6 +65,34 @@ function PlayerInner() {
     }});
   };
 
+  const onRegenerate = async () => {
+    setRegenerating(true);
+    tts.stop();
+    const deviceId = getOrCreateDeviceId();
+    await fetch('/api/briefing/regenerate', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ device_id: deviceId, date }),
+    });
+    // Re-fetch
+    const res = await fetch('/api/briefing/generate', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        device_id: deviceId,
+        date,
+        length_minutes: 8,
+        topic_ids: JSON.parse(localStorage.getItem('dayilydose.topics') ?? '[]'),
+      }),
+    });
+    if (res.ok) {
+      const newScript = await res.json();
+      setScript(newScript);
+      setCurrent(1);
+    }
+    setRegenerating(false);
+  };
+
   return (
     <main style={{ maxWidth: 640, margin: '0 auto', padding: 24 }}>
       <CoverArt title={script.title} />
@@ -85,6 +114,11 @@ function PlayerInner() {
           if (ch) { tts.stop(); setTimeout(() => tts.speak(ch.script_text, { onDone: () => current < script.chapters.length && playChapter(current + 1) }), 50); }
         }}
       />
+      <div style={{ textAlign: 'center', marginTop: 16 }}>
+        <button onClick={onRegenerate} disabled={regenerating} style={{ padding: '8px 16px', border: '1px solid #ccc', borderRadius: 8, background: '#fff', cursor: regenerating ? 'wait' : 'pointer' }}>
+          {regenerating ? '重新生成中…' : '🔄 重新生成'}
+        </button>
+      </div>
     </main>
   );
 }
