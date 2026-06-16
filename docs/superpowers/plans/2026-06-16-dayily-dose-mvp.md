@@ -2654,6 +2654,12 @@ vi.stubGlobal('window', {
   SpeechSynthesisUtterance: FakeUtterance,
 });
 
+// NOTE: The implementation does `new SpeechSynthesisUtterance(c)` (global access),
+// not `new window.SpeechSynthesisUtterance(c)`. In Node (vitest) this global is
+// undefined, so we must stub it explicitly. Without this line, all 4 tests fail
+// with `ReferenceError: SpeechSynthesisUtterance is not defined`.
+vi.stubGlobal('SpeechSynthesisUtterance', FakeUtterance);
+
 import { createTts } from '@/lib/tts/synthesize';
 
 describe('createTts', () => {
