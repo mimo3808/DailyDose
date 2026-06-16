@@ -1194,7 +1194,7 @@ const MOCK_RSS = `<?xml version="1.0"?>
 
 describe('fetchAndStoreForSource', () => {
   beforeAll(async () => {
-    const r = await sql(
+    const r = await sql.query(
       `INSERT INTO sources (url, title, status) VALUES ($1, 'Mock Test', 'active') RETURNING id`,
       [`https://mock.test/feed-${Date.now()}`]
     );
@@ -1202,7 +1202,7 @@ describe('fetchAndStoreForSource', () => {
   });
 
   afterAll(async () => {
-    await sql(`DELETE FROM sources WHERE id = $1`, [testSourceId]);
+    await sql.query(`DELETE FROM sources WHERE id = $1`, [testSourceId]);
   });
 
   it('inserts new articles', async () => {
@@ -1237,7 +1237,7 @@ import { contentHash, dedupeByHash } from './dedupe';
 
 export async function fetchAndStoreForSource(sourceId: number, rawXml: string): Promise<number> {
   const sql = neon(process.env.DATABASE_URL!);
-  const sourceRows = await sql(`SELECT topic_id, url FROM sources WHERE id = $1`, [sourceId]);
+  const sourceRows = await sql.query(`SELECT topic_id, url FROM sources WHERE id = $1`, [sourceId]);
   if (!sourceRows.length) return 0;
   const topicId = (sourceRows[0] as any).topic_id;
 
@@ -1248,7 +1248,7 @@ export async function fetchAndStoreForSource(sourceId: number, rawXml: string): 
   let inserted = 0;
   for (const it of unique) {
     const hash = contentHash(it);
-    const r = await sql(
+    const r = await sql.query(
       `INSERT INTO articles (source_id, topic_id, title, url, content, published_at, content_hash)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        ON CONFLICT (content_hash) DO NOTHING
@@ -1258,7 +1258,7 @@ export async function fetchAndStoreForSource(sourceId: number, rawXml: string): 
     if (r.length) inserted++;
   }
 
-  await sql(
+  await sql.query(
     `UPDATE sources SET last_fetched_at = NOW(), consecutive_failures = 0, status = 'active' WHERE id = $1`,
     [sourceId]
   );
@@ -1267,7 +1267,7 @@ export async function fetchAndStoreForSource(sourceId: number, rawXml: string): 
 
 export async function markSourceFailure(sourceId: number): Promise<void> {
   const sql = neon(process.env.DATABASE_URL!);
-  const rows = await sql(
+  const rows = await sql.query(
     `UPDATE sources
      SET consecutive_failures = consecutive_failures + 1,
          status = CASE WHEN consecutive_failures + 1 >= 5 THEN 'inactive' ELSE 'degraded' END
@@ -1321,7 +1321,7 @@ type SourceRow = { id: number; url: string };
 
 export async function runFetchCycle(): Promise<{ ok: number; failed: number }> {
   const sql = neon(process.env.DATABASE_URL!);
-  const rows = (await sql(
+  const rows = (await sql.query(
     `SELECT id, url FROM sources WHERE status IN ('active', 'degraded', 'pending')`
   )) as SourceRow[];
 
@@ -1382,13 +1382,20 @@ Create `vercel.json`:
 Create `scripts/fetch-once.ts`:
 ```typescript
 import { config } from 'dotenv';
-config({ path: '.env.local' });
+import { resolve } from 'path';
 import { runFetchCycle } from '../src/lib/rss/pipeline';
 
-runFetchCycle().then(r => {
-  console.log('done:', r);
-  process.exit(0);
-});
+config({ path: resolve(process.cwd(), '.env.local') });
+
+runFetchCycle()
+  .then(r => {
+    console.log('done:', r);
+    process.exit(0);
+  })
+  .catch(e => {
+    console.error(e);
+    process.exit(1);
+  });
 ```
 
 - [ ] **Step 5: Run once**
@@ -1404,10 +1411,15 @@ Expected: `done: { ok: 50, failed: <some number> }` (some failures are normal fo
 
 ```bash
 cd "C:/Users/Longl/projects/DayilyDose"
-npx tsx -e "import { config } from 'dotenv'; config({ path: '.env.local' }); import('@neondatabase/serverless').then(({neon}) => neon(process.env.DATABASE_URL)('SELECT COUNT(*)::int AS n FROM articles;')).then(r => console.log('articles:', r[0].n));"
+npx tsx scripts/verify-seed.ts
 ```
 
-Expected: non-zero number.
+Expected: a non-zero `articles` count will be reported (you can add an `articles` query to the script, or run this small one-off):
+```bash
+npx tsx -e "const {neon}=require('@neondatabase/serverless');require('dotenv').config({path:'.env.local'});(async()=>{const s=neon(process.env.DATABASE_URL);const r=await s.query('SELECT COUNT(*)::int AS n FROM articles');console.log('articles:',r[0].n);})()"
+```
+
+(The plan's original `npx tsx -e "..."` snippet for this is fragile; the inline `require` form above is more reliable. If you prefer, just run the fetch script again and rely on its console output.)
 
 - [ ] **Step 7: Commit**
 

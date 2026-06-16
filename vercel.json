@@ -1,0 +1,5 @@
+{
+  "crons": [
+    { "path": "/api/rss/fetch?secret=${CRON_SECRET}", "schedule": "*/20 * * * *" }
+  ]
+}
