@@ -47,8 +47,8 @@ async function main() {
       for (const url of feeds) {
         if (existing.has(url)) continue;
         await sql.query(
-          `INSERT INTO sources (url, title, status) VALUES ($1, $2, 'pending')`,
-          [url, home]
+          `INSERT INTO sources (url, title, status) VALUES ($1, NULL, 'pending')`,
+          [url]
         );
         added++;
         existing.add(url);

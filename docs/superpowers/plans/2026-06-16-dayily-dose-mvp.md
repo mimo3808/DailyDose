@@ -1539,7 +1539,7 @@ import { neon } from '@neondatabase/serverless';
 
 export async function updateQualityScores(): Promise<void> {
   const sql = neon(process.env.DATABASE_URL!);
-  await sql(`
+  await sql.query(`
     UPDATE sources s SET quality_score = sub.score
     FROM (
       SELECT
@@ -1561,40 +1561,59 @@ export async function updateQualityScores(): Promise<void> {
 Create `scripts/discover-once.ts`:
 ```typescript
 import { config } from 'dotenv';
-config({ path: '.env.local' });
+import { resolve } from 'path';
 import { neon } from '@neondatabase/serverless';
 import { extractRssLinksFromHtml } from '../src/lib/rss/discover';
 
+config({ path: resolve(process.cwd(), '.env.local') });
+
 const CANDIDATES = [
-  'https://news.ycombinator.com/', // example; user should curate
+  // User-curated list of candidate homepages. Pull from public RSS aggregator
+  // pages, blogrolls, and known publication sites. The exact set is up to the
+  // user — start with ~20-30 well-known sites; the discoverer will find their
+  // own feed links.
+  'https://news.ycombinator.com/',
   'https://lobste.rs/',
   'https://www.theverge.com/',
+  'https://www.wired.com/',
+  'https://arstechnica.com/',
+  'https://www.engadget.com/',
+  'https://www.zdnet.com/',
+  'https://www.technologyreview.com/',
+  'https://stratechery.com/',
+  'https://www.benkuhn.net/',
+  'https://danluu.com/',
+  'https://www.greaterwrong.com/',
+  'https://www.lesswrong.com/',
+  'https://www.economist.com/',
+  'https://www.theatlantic.com/',
+  'https://www.newyorker.com/',
+  'https://www.nytimes.com/',
+  'https://www.washingtonpost.com/',
+  'https://www.theguardian.com/',
+  'https://www.bbc.com/',
 ];
 
 async function main() {
   const sql = neon(process.env.DATABASE_URL!);
   const existing = new Set(
-    ((await sql(`SELECT url FROM sources`)) as any[]).map(r => r.url)
+    ((await sql.query(`SELECT url FROM sources`)) as any[]).map(r => r.url)
   );
   let added = 0;
   for (const home of CANDIDATES) {
     try {
-      const res = await fetch(home, { headers: { 'user-agent': 'DayilyDose/0.1' } });
+      const res = await fetch(home, { headers: { 'user-agent': 'DayilyDose/0.1 (+https://dayilydose.app)' } });
       if (!res.ok) continue;
       const html = await res.text();
       const feeds = extractRssLinksFromHtml(html, home);
       for (const url of feeds) {
         if (existing.has(url)) continue;
-        try {
-          await sql(
-            `INSERT INTO sources (url, title, status) VALUES ($1, $2, 'pending')`,
-            [url, home]
-          );
-          added++;
-          existing.add(url);
-        } catch {
-          // duplicate or invalid, skip
-        }
+        await sql.query(
+          `INSERT INTO sources (url, title, status) VALUES ($1, $2, 'pending')`,
+          [url, home]
+        );
+        added++;
+        existing.add(url);
       }
     } catch (e: any) {
       console.warn(`skip ${home}: ${e.message}`);
