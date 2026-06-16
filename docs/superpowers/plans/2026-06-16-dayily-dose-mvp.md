@@ -2499,10 +2499,11 @@ import { estimateChapterCount } from './prompt';
 type Article = { title: string; url: string; description: string; publishedAt: Date | null };
 
 export function buildExtractiveScript(articles: Article[], lengthMinutes: number): ScriptJson {
-  const chapterCount = estimateChapterCount(lengthMinutes);
-  const perChapter = Math.max(1, Math.ceil(articles.length / chapterCount));
+  const targetChapters = estimateChapterCount(lengthMinutes);
+  const effectiveChapters = articles.length < targetChapters ? 1 : targetChapters;
+  const perChapter = Math.max(1, Math.ceil(articles.length / effectiveChapters));
   const chapters = [];
-  for (let i = 0; i < chapterCount; i++) {
+  for (let i = 0; i < effectiveChapters; i++) {
     const slice = articles.slice(i * perChapter, (i + 1) * perChapter);
     if (!slice.length) break;
     const titles = slice.map(a => a.title).join('、');
