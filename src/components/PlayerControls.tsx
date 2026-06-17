@@ -28,17 +28,17 @@ export function PlayerControls({
   return (
     <div className="mt-6">
       <div className="controls-row">
-        <button onClick={onPrev} className="btn" title="上一章">⏮</button>
+        <button onClick={onPrev} className="btn" title="上一章" aria-label="上一章">⏮</button>
 
         {isPlaying ? (
-          <button onClick={onPause} className="btn btn--primary">⏸ 暂停</button>
+          <button onClick={onPause} className="btn btn--primary" aria-label="暂停">⏸ 暂停</button>
         ) : (
-          <button onClick={onResume} className="btn btn--primary">▶ 继续</button>
+          <button onClick={onResume} className="btn btn--primary" aria-label="继续播放">▶ 继续</button>
         )}
 
-        <button onClick={onStop} className="btn">⏹</button>
-        <button onClick={onSkip} className="btn">⏭ 15s</button>
-        <button onClick={onNext} className="btn" title="下一章">⏭</button>
+        <button onClick={onStop} className="btn" aria-label="停止">⏹</button>
+        <button onClick={onSkip} className="btn" aria-label="跳过 15 秒">⏭ 15s</button>
+        <button onClick={onNext} className="btn" title="下一章" aria-label="下一章">⏭</button>
       </div>
 
       <div className="controls-row controls-row--secondary">
